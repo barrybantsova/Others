@@ -1,0 +1,531 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<ctype.h>
+
+typedef struct
+{
+    char question[300];
+    char date[30],author[30], ansr1[80], ansr2[80], ansr3[80], ansr4[80];
+    int id,correctAnsr, level;
+} game;
+
+typedef struct Node
+{
+    game data;
+    struct Node* next;
+} node;
+
+game initGame(node* head);
+void printGame(game data, int mode);
+void printNode(node* head);
+int isEmpty(node* head);
+void addNode(node** head, game data, int mode);
+void deleteNode(node** head);
+char* getFileName();
+void loadFile(node** head);
+void saveFile(node* head);
+node* seekAndDestroy(node* head);
+void gameMode(game data, node* head);
+void printRandom1(node* head);
+void printRandom2(node* head);
+void printRandom3(node* head);
+
+int mainMenu()
+{
+    int nChoice=0;
+    do
+    {
+        printf(" __/MAIN MENU\\______________________\n");
+        printf("1.EDIT MODE\n");
+        printf("2.GAME MODE\n");
+        printf("SELECT OPTION: ");
+        fflush(stdin);
+        scanf("%d", &nChoice);
+    }
+    while(nChoice< 0 || nChoice > 2);
+
+    return nChoice;
+}
+
+int editMenu()
+{
+    node* head = NULL;
+    int
+    nChoice = 0;
+    do
+    {
+        printf(" __/EDIT MODE\\______________________\n");
+        printf("1/Load file.\n");
+        printf("2.Save file\n");
+        printf("3.Add a new question.\n");
+        printf("4.View all questions and answers.\n");
+        printf("5.Delete a question\n");
+        printf("6. EXIT\n");
+        printf("SELECT OPTION: ");
+        fflush(stdin);
+        scanf("%d", &nChoice);
+        switch (nChoice)
+        {
+        case 1:
+            loadFile(&head);
+            break;
+
+        case 2:
+            saveFile(head);
+            break;
+
+        case 3:
+            addNode(&head, initGame(head), 1);
+            break;
+
+        case 4:
+            printNode(head);
+            break;
+        case 5:
+            seekAndDestroy(head);
+            break;
+        }
+    }
+    while (nChoice != 6);
+    return nChoice;
+}
+
+int gameMenu()
+{
+    node* head = NULL;
+    int
+    nChoice = 0;
+    do
+    {
+        printf(" __/GAME MODE\\______________________\n");
+        printf("WELCOME TO GAME MODE\n");
+        printf("1.LOAD FILE\n");
+        printf("2. START GAME\n");
+        printf("3. EXIT\n");
+        fflush(stdin);
+        scanf("%d",&nChoice);
+        switch (nChoice)
+        {
+        case 1:
+            loadFile(&head);
+            break;
+        case 2:
+            gameMode(head->data,head);
+            break;
+
+        }
+    }
+    while (nChoice != 3);
+    return nChoice;
+}
+
+int main()
+{
+
+    int nChoice=0;
+
+    do
+    {
+        system("cls");
+        nChoice = mainMenu ();
+        switch (nChoice)
+        {
+        case 1:
+            editMenu();
+            break;
+        case 2:
+            gameMenu();
+            break;
+        }
+    }
+    while (nChoice != 3);
+    system ("pause");
+    return 0;
+}
+
+node* seekAndDestroy(node* head)
+{
+    node *p,*prev;
+    int num;
+
+    printf("Enter ID to delete item: ");
+    scanf("%d",&num);
+    for(prev=p=head; p!=NULL; )
+    {
+        if (p->data.id==num)
+        {
+            if (head==p)
+            {
+                head = head->next;
+                free(p);
+                p = prev = head;
+            }
+            else
+            {
+                prev->next = p->next;
+                free(p);
+                p = prev->next;
+            }
+            printf("Item Deleted!");
+            printNode(head);
+        }
+        else
+        {
+            prev = p;
+            p=p->next;
+        }
+    }
+    return head;
+}
+
+game initGame(node* head)
+{
+    game newq;
+
+    printf("Add ID:\n");
+    fflush(stdin);
+    scanf("%d",&newq.id);
+
+    printf("Add question:\n");
+    fflush(stdin);
+    gets(newq.question);
+
+    printf("Enter the first answer:");
+    fflush(stdin);
+    gets(newq.ansr1);
+
+    printf("Enter the second answer:");
+    fflush(stdin);
+    gets(newq.ansr2);
+
+    printf("Enter the third answer:");
+    fflush(stdin);
+    gets(newq.ansr3);
+
+    printf("Enter the fourth answer:");
+    fflush(stdin);
+    gets(newq.ansr4);
+
+    printf("Enter the number that identifies which is the right answer:\n");
+    fflush(stdin);
+    scanf("%d", &newq.correctAnsr);
+
+    printf("Enter the date of adding in format DD.MM.YYYY:\n");
+    fflush(stdin);
+    gets(newq.date);
+
+    printf("Enter the author of the question:\n");
+    fflush(stdin);
+    gets(newq.author);
+
+    printf("Enter the level of complexity of the question:\n");
+    printf("0-easy\n");
+    printf("1-medium\n");
+    printf("2-hard\n");
+    fflush(stdin);
+    scanf("%d", &newq.level);
+
+    return newq;
+}
+
+void printGame(game data, int mode)
+{
+    printf("\nID:     %d\n", data.id);
+    printf("Question:  %s\n", data.question);
+    printf("First Answer:  %s\n", data.ansr1);
+    printf("Second Answer:  %s\n", data.ansr2);
+    printf("Third Answer:  %s\n", data.ansr3);
+    printf("Forth Answer:  %s\n", data.ansr4);
+    printf("Right Answer: %d \n", data.correctAnsr);
+    printf("Date:  %s\n", data.date);
+    printf("Author:  %s\n", data.author);
+    printf("Level of complexity:  %d\n", data.level);
+}
+
+void printNode(node* head)
+{
+    int n = 0;
+
+    if( isEmpty(head) )
+        return;
+
+    while(head)
+    {
+        printf("\nQuestion and Answers %d", ++n);
+        printGame(head->data, 1);
+        head = head->next;
+    }
+}
+
+int isEmpty(node* head)
+{
+    if(head)
+        return 0;
+    printf("List is empty!\n");
+    return 1;
+}
+
+void addNode(node** head, game data, int mode)
+{
+    node* temp = (node*)malloc(sizeof(node));
+    node* temp2 = *head;
+    temp->data = data;
+    temp->next = NULL;
+
+    if(!(*head))
+    {
+        *head = temp;
+        if(mode == 1)
+            printf("First question data added successfully!\n");
+        return;
+    }
+
+    while(temp2->next)
+    {
+        temp2 = temp2->next;
+    }
+    temp2->next = temp;
+
+    if(mode == 1)
+        printf("New question data added successfully!\n");
+}
+
+void deleteNode(node** head)
+{
+    node* temp;
+
+    while(*head)
+    {
+        temp = *head;
+        *head = (*head)->next;
+        free(temp);
+    }
+}
+
+char* getFileName()
+{
+    char *fileName = (char*)malloc(50*sizeof(char));
+
+    printf("\nEnter file name: ");
+    fflush(stdin);
+    gets(fileName);
+
+    if(!strchr(fileName, '.'))
+    {
+        strcat(fileName, ".dat");
+    }
+
+    return fileName;
+}
+
+void loadFile(node** head)
+{
+    FILE* fp;
+    game data;
+    char *fileName;
+
+    fileName = getFileName();
+
+    if(!(fp = fopen(fileName, "rb")))
+    {
+        fprintf(stderr, "Error loading file!\a\n");
+        free(fileName);
+        return;
+    }
+
+    if(*head)
+        deleteNode(head);
+
+    while(1)
+    {
+        if(!fread(&data, sizeof(data), 1, fp))
+            break;
+
+        addNode(head, data, 2);
+    }
+
+    fclose(fp);
+
+    if(!(*head))
+        printf("No data loaded from \"%s\"\n", fileName);
+    else
+        printf("Info loaded successfully from \"%s\"\n", fileName);
+
+    free(fileName);
+}
+
+void saveFile(node* head)
+{
+    FILE* fp;
+    char *fileName;
+
+    if( isEmpty(head) )
+    {
+        printf("Add some new data first!\n");
+        return;
+    }
+
+    fileName = getFileName();
+
+    if( !(fp = fopen(fileName, "ab")) )
+    {
+        exit(1);
+    }
+
+    while(head)
+    {
+        if(fwrite(&head->data, sizeof(game), 1, fp) != 1)
+        {
+            printf("Error occured while writing on file\n");
+            exit(1);
+        }
+        head = head->next;
+    }
+
+    fclose(fp);
+
+    printf("Info saved successfully to \"%s\"\n", fileName);
+    free(fileName);
+}
+
+void gameMode( game data, node* head)
+{
+
+    int i;
+    if( isEmpty(head) )
+    {
+        printf("Add some new data first!\n");
+        return;
+    }
+
+    for(i=0; i<5; i++)
+    {
+        printRandom1(head);
+    }
+    for(i=5; i<10; i++)
+    {
+        printRandom2(head);
+    }
+    for(i=10; i<15; i++)
+    {
+        printRandom3(head);
+    }
+    printf("Congrats! YOU WON!\n");
+    return mainMenu();
+}
+
+void printRandom1(node *head)
+{
+    int n,ans;
+    if (isEmpty(head))
+        return;
+
+    srand(time(NULL));
+
+    char *result = head->data.question;
+    node *current = head;
+    node *temp=head;
+    for (n=2; current!=NULL; n++)
+    {
+        if (rand() % n == 0 && current->data.level==0)
+            result = current->data.question;
+        current = current->next;
+    }
+    temp=result;
+    printf("%s\n", result);
+    printf("1.-%s\n",temp->data.ansr1);
+    printf("2.-%s\n",temp->data.ansr2);
+    printf("3.-%s\n",temp->data.ansr3);
+    printf("4.-%s\n",temp->data.ansr4);
+
+    printf("Enter the correct answer: ");
+    scanf("%d",&ans);
+
+    if(ans==temp->data.correctAnsr)
+        printf("CORRECT ANSWER!\n");
+    else
+    {
+        printf("WRONG ANSWER\n");
+        printf("GAME OVER\t");
+        printf("The correct answer is: %d\n",temp->data.correctAnsr);
+        return mainMenu();
+    }
+}
+
+void printRandom2(node *head)
+{
+    int n,ans;
+    if (isEmpty(head))
+        return;
+
+    srand(time(NULL));
+
+    char *result = head->data.question;
+    node *current = head;
+    node *temp=head;
+    for (n=2; current!=NULL; n++)
+    {
+        if (rand() % n == 0 && current->data.level==1)
+            result = current->data.question;
+        current = current->next;
+    }
+    temp=result;
+    printf("%s\n", result);
+    printf("1.-%s\n",temp->data.ansr1);
+    printf("2.-%s\n",temp->data.ansr2);
+    printf("3.-%s\n",temp->data.ansr3);
+    printf("4.-%s\n",temp->data.ansr4);
+
+    printf("Enter the correct answer: ");
+    scanf("%d",&ans);
+
+    if(ans==temp->data.correctAnsr)
+        printf("CORRECT ANSWER!\n");
+    else
+    {
+        printf("WRONG ANSWER\n");
+        printf("GAME OVER\t");
+        printf("The correct answer is: %d\n",temp->data.correctAnsr);
+        return mainMenu();
+    }
+}
+
+void printRandom3(node *head)
+{
+    int n,ans;
+    if (isEmpty(head))
+        return;
+
+    srand(time(NULL));
+
+    char *result = head->data.question;
+    node *current = head;
+    node *temp=head;
+    for (n=2; current!=NULL; n++)
+    {
+        if (rand() % n == 0 && current->data.level==2)
+            result = current->data.question;
+        current = current->next;
+    }
+    temp=result;
+    printf("%s\n", result);
+    printf("1.-%s\n",temp->data.ansr1);
+    printf("2.-%s\n",temp->data.ansr2);
+    printf("3.-%s\n",temp->data.ansr3);
+    printf("4.-%s\n",temp->data.ansr4);
+
+    printf("Enter the correct answer: ");
+    scanf("%d",&ans);
+
+    if(ans==temp->data.correctAnsr)
+        printf("CORRECT ANSWER!\n");
+    else
+    {
+        printf("WRONG ANSWER\n");
+        printf("GAME OVER\t");
+        printf("The correct answer is: %d\n",temp->data.correctAnsr);
+        return mainMenu();
+    }
+}
+
